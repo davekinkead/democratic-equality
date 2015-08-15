@@ -27,13 +27,14 @@ The model consists of agents who hold stipulated preferences `A`, `B`, `C`, `D`,
       constructor: (@preference) ->
 
 
-We create the simulation by instantiating agents and randomly assigning them a preference from a given set of parameters.
+We create the simulation by instantiating agents and randomly assigning them a preference from a given set of parameters.  Sometimes, we will want to see what happens when preferences are evenly distributed.  Othertimes, we want to know what happens when they are highly skewed.
 
 
     populate = (parameters) ->
       for n in [1..parameters.agents]
         index = Math.floor Math.random() * parameters.preferences.length
-        new Agent parameters.preferences[index]
+        preference = parameters.preferences[index]
+        new Agent preference
 
 
 Next, we model some democratic processes that have procedural equality:
@@ -85,31 +86,11 @@ We then measure the substantive equality that the democratic processes realise o
 
       results = {"sortition": [], "plurality": []}
       simulation.map (trial) ->
-        trial.sortition.map (score, i) ->
-          results.sortition[i] = 0 if results.sortition[i] is undefined
-          results.sortition[i] += score
-        trial.plurality.map (score, i) ->
-          results.plurality[i] = 0 if results.plurality[i] is undefined
-          results.plurality[i] += score      
+        ["sortition", "plurality"].map (key) ->
+          trial[key].map (score, i) ->
+            results[key][i] = 0 if results[key][i] is undefined
+            results[key][i] += score    
       results
-
-
-
-
-
-
-      # s = results.map (trial) ->
-      #   sTmp = []
-      #   trial.sortition.map (winner, i) ->
-      #     sTmp[i] = [] if sTmp[i] is undefined
-      #     sTmp[i].push winner
-      #   console.log sTmp[1]
-      #   sTmp.reduce (sum, a) ->
-      #     sum + parseInt a
-      #   , 0
-
-      # {"sortition": s}
-
 
 
 The outcome of the decision procedure is recorded, along with which agents had their preferences realised by the procedure.  This process of agent creation, decision, and measurement is repeated 1000 times to generate a probability density function with frequency based likelihoods that any agent will have their preference realised by a given procedure.
@@ -120,19 +101,28 @@ The outcome of the decision procedure is recorded, along with which agents had t
         if agent.preference is winner then 1 else 0
 
 
-Substantive equality is measured by calculating the standard deviation of the likelihood that an agent's preferences will be realised by a decision process.  The idea here is that a process is substantively equal (SD is low) whenever agents have equiprobable preference realisation.  When it is likely that some agents rather than others will have their preferences realised (SD is high), then a process has little substantive equality.
+Substantive equality is measured by calculating the standard deviation of the likelihood that an agent's preferences will be realised by a decision process.  The idea here is that a process is substantively equal (SD is low) whenever agents have equiprobable preference realisation.  When it is likely that some agents rather than others will have their preferences realised (SD is high), then a process has little substantive equality.  We also normalise it against the mean so that these are comparable.
 
+
+    sum      = (arr) -> arr.reduce (a,b) -> a + b
+    mean     = (arr) -> sum(arr) / arr.length
+    variance = (arr) ->
+      µ = mean(arr)
+      (arr.reduce ( (a,b) -> a + (µ-b)*(µ-b)), 0) / arr.length
+    stdev    = (arr) -> Math.sqrt(variance arr)
 
     equality = (realisations) ->
+      100 - (stdev(realisations) / mean(realisations))
       
 
 
 The first parameter value examined is preference distribution.  We start with a uniformly random distribution of preferences across agents ie. roughly equal numbers of each preference being held.  We then `skew` the distribution of preferences so that more of one preference is common within our _digital demos_.
 
 
-    simulation = run {"agents": 10, "preferences": ["A", "B", "C", "D"], "trials": 100}
-    console.log simulation
+    simulation = run {"agents": 1000, "preferences": ["A", "B", "C", "D"], "skew": 0.5, "trials": 1000}
 
+    console.log "Sortition substantive equality: #{equality simulation.sortition}"
+    console.log "Plurality substantive equality: #{equality simulation.plurality}"
 
 
 > The expectation here is that when preferences are evenly distributed, all three procedures will realise substantive equality.  When preferences are skewed, however, we will (hopefully) see voting but not sortition result in persistent minorities, and thus not realise substantive equality.
@@ -153,3 +143,13 @@ Will this be enough to seriously challenge egalitarian justifications of democra
 
 ## Appendix
 
+A number of helper functions are necessary for the simulation to work as an independent program.  As these are not germane to the central argument, the have been extracted from the paper's body to here.  
+
+First let's define some simple statistical functions.
+
+
+    sum      = (arr) -> arr.reduce (a,b) -> a + b
+    mean      = (arr) -> sum(arr) / arr.length
+    variance = (arr) ->
+      µ = mean(arr)
+      (arr.reduce ( (a,b) -> a + (µ-b)*(µ-b)), 0) / arr.length-b)), 0) / arr.length
