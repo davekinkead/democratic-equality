@@ -1,5 +1,5 @@
 ---
-title: Some witty pun about equality
+title: Democratic Equality
 author: Dave Kinkead
 email: d.kinkead@uq.edu.au
 status: bat-shit-crazy idea
@@ -22,21 +22,118 @@ I'm going to create a computer model of a simple democracy with procedural equal
 
 The model consists of agents who hold stipulated preferences `A`, `B`, `C`, `D`, etc, and who all exist in a single polity.
 
-First, we model three democratic processes that have procedural equality:
 
-  - unanimity voting
-  - majority voting
+    class Agent
+      constructor: (@preference) ->
+
+
+We create the simulation by instantiating agents and randomly assigning them a preference from a given set of parameters.
+
+
+    populate = (parameters) ->
+      for n in [1..parameters.agents]
+        index = Math.floor Math.random() * parameters.preferences.length
+        new Agent parameters.preferences[index]
+
+
+Next, we model some democratic processes that have procedural equality:
+
+  - super majority voting
+  - plurality voting
   - sortition
 
-In the voting processes, agents have an equal vote and vote naively according to their preference.  Under sortition, agents have an equiprobable chance of having their preference selected.
+In the polling processes, agents honestly express their preference.  
+
+
+    poll = (agents) ->
+      agents.map (agent) ->
+            agent.preference
+          .reduce (results, preference) ->
+            results[preference] = ++results[preference] || 1
+            results
+          , results={}
+
+
+In the voting processes, agents have an equal vote and vote naively according to their preference.  We take the results from the prefernce poll and determine the pluarlity winner.  In the case of a tie, we select the first result from the randomly ordered winners.
+
+
+    plurality = (preferences) ->
+      highest = Math.max.apply null, Object.keys(preferences).map (p) ->
+        preferences[p]
+      winner = Object.keys(preferences).filter (p) ->
+          preferences[p] is highest        
+      winner[0]
+
+
+Under sortition, agents have an equiprobable chance of having their preference selected.
+
+
+    sortition = (agents) ->
+      agents[Math.floor Math.random() * agents.length].preference
+
 
 We then measure the substantive equality that the democratic processes realise over a range of parameter variable in a Monte Carlo simulation with 1000 trials.  In each trial, agents are created with preferences based on stipulated input parameters, before voting or casting lots as modelled above.
 
+
+    run = (parameters) ->
+      simulation = [1..parameters.trials].map (trial) ->
+        agents = populate parameters
+        {
+          "sortition": measure(sortition(agents), agents), 
+          "plurality": measure(plurality(poll agents), agents)
+        }
+
+      results = {"sortition": [], "plurality": []}
+      simulation.map (trial) ->
+        trial.sortition.map (score, i) ->
+          results.sortition[i] = 0 if results.sortition[i] is undefined
+          results.sortition[i] += score
+        trial.plurality.map (score, i) ->
+          results.plurality[i] = 0 if results.plurality[i] is undefined
+          results.plurality[i] += score      
+      results
+
+
+
+
+
+
+      # s = results.map (trial) ->
+      #   sTmp = []
+      #   trial.sortition.map (winner, i) ->
+      #     sTmp[i] = [] if sTmp[i] is undefined
+      #     sTmp[i].push winner
+      #   console.log sTmp[1]
+      #   sTmp.reduce (sum, a) ->
+      #     sum + parseInt a
+      #   , 0
+
+      # {"sortition": s}
+
+
+
 The outcome of the decision procedure is recorded, along with which agents had their preferences realised by the procedure.  This process of agent creation, decision, and measurement is repeated 1000 times to generate a probability density function with frequency based likelihoods that any agent will have their preference realised by a given procedure.
+
+
+    measure = (winner, agents) ->
+      agents.map (agent) ->
+        if agent.preference is winner then 1 else 0
+
 
 Substantive equality is measured by calculating the standard deviation of the likelihood that an agent's preferences will be realised by a decision process.  The idea here is that a process is substantively equal (SD is low) whenever agents have equiprobable preference realisation.  When it is likely that some agents rather than others will have their preferences realised (SD is high), then a process has little substantive equality.
 
+
+    equality = (realisations) ->
+      
+
+
 The first parameter value examined is preference distribution.  We start with a uniformly random distribution of preferences across agents ie. roughly equal numbers of each preference being held.  We then `skew` the distribution of preferences so that more of one preference is common within our _digital demos_.
+
+
+    simulation = run {"agents": 10, "preferences": ["A", "B", "C", "D"], "trials": 100}
+    console.log simulation
+
+
 
 > The expectation here is that when preferences are evenly distributed, all three procedures will realise substantive equality.  When preferences are skewed, however, we will (hopefully) see voting but not sortition result in persistent minorities, and thus not realise substantive equality.
 
@@ -53,3 +150,6 @@ Finally, we add influence to the model.  By influence I mean informal political 
 > Also for debate here is whether we should treat the influence as resulting in enlightened preference or are others misled. The former requires measuring against final preference while the latter against initial preference.
 
 Will this be enough to seriously challenge egalitarian justifications of democracy? I have a strong hunch that it will undermine the application of these accounts to our actual democracies that use voting rather than sorting and have concentrated informal power structures.
+
+## Appendix
+
