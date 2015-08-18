@@ -8,17 +8,21 @@ license: CC BY SA
 
 # Modelling Democratic Equality
 
-In this paper I want to show that egalitarian justifications of democratic authority fail under normal conditions because they cannot reliably produce egalitarian outcomes.
+Some justifications of democracy are egalitarian.  According to these accounts, democracy has value because it embodies political equality.
 
-Democracy requires equality.  Political equality, along with popular sovereignty, are essential the notion of democracy itself.
+But _equality_ is one of those essentially contested terms and a great deal hinges on exactly which conception of equality democracy requires.  One important distinction when considering equality is thinking of it as either _procedurally_ or _substantively_.  
 
-But _equality_ is one of those essentially contested terms and a great deal hinges on exactly which conception of equality democracy requires.  We can think of equality _procedurally_ or _substantively_.
+Procedural equality requires treating relevant people the same. It is an agent-blind conception that doesn't make distinctions between agents and treats everyone the same.  
 
-Procedural equality, the idea that equality means treating relevant people the same, is too weak a concept to do the necessary normative work of legitimating democracy.
+Substantive equality, by contrast, requires that a process actually realises equality.  It permits treating different people differently in order to achieve equality.  
 
-Substantive equality, the idea that equality means relevant sameness in the thing being realised, is a far more plausible candidate for justifying democracy.
+Yet procedural equality is too weak a concept to do the necessary normative work of legitimating democracy.  Why should we care if a process treats people the same when it doesn't actually _realise_ political equality?  If it is actual equality that matters, then we must focus of substantive equality.
 
-I'm going to create a computer model of a simple democracy with procedural equality and measure it's substantive equality for a range of parameters.
+In this paper, I want to explore the relationship between procedural and substantive equality and answer the question: 'Under what conditions does procedural equality map substantive equality, and under what conditions does it not?'.  
+
+I will then attempt to demonstrate that egalitarian justifications of democratic authority fail under normal conditions because they cannot reliably produce egalitarian outcomes.
+
+To do this, I'm going to create a computer model of a simple democracy with procedural equality and measure it's substantive equality for a range of parameters.
 
 The model consists of agents who hold stipulated preferences `A`, `B`, `C`, `D`, etc, and who all exist in a single polity.
 
