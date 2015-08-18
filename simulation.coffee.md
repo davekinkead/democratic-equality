@@ -101,7 +101,7 @@ The outcome of the decision procedure is recorded, along with which agents had t
         if agent.preference is winner then 1 else 0
 
 
-Substantive equality is measured by calculating the standard deviation of the likelihood that an agent's preferences will be realised by a decision process.  The idea here is that a process is substantively equal (SD is low) whenever agents have equiprobable preference realisation.  When it is likely that some agents rather than others will have their preferences realised (SD is high), then a process has little substantive equality.  We also normalise it against the mean so that these are comparable.
+Substantive equality is measured by calculating the coefficient of variation of the likelihood that an agent's preferences will be realised by a decision process.  The idea here is that a process is substantively equal (SD is low) whenever agents have equiprobable preference realisation.  When it is likely that some agents rather than others will have their preferences realised (SD is high), then a process has little substantive equality.  We also normalise it against the mean so that these are comparable.
 
 
     sum      = (arr) -> arr.reduce (a,b) -> a + b
@@ -112,15 +112,24 @@ Substantive equality is measured by calculating the standard deviation of the li
     stdev    = (arr) -> Math.sqrt(variance arr)
 
     equality = (realisations) ->
-      100 - (stdev(realisations) / mean(realisations))
+      stdev(realisations) / mean(realisations)
       
 
 
 The first parameter value examined is preference distribution.  We start with a uniformly random distribution of preferences across agents ie. roughly equal numbers of each preference being held.  We then `skew` the distribution of preferences so that more of one preference is common within our _digital demos_.
 
+Let's try and visualise this idea using 10 agents and 5 trials.
+
+    # D B A B B A B C C C 
+    # D C C B A B A D D A 
+    # B C A C B C C D B A 
+    # B D D A B C A C D D 
+    # C D C C A B A D B C 
+
 
     simulation = run {"agents": 1000, "preferences": ["A", "B", "C", "D"], "skew": 0.5, "trials": 1000}
 
+    console.log mean(simulation.sortition)/stdev(simulation.sortition)
     console.log "Sortition substantive equality: #{equality simulation.sortition}"
     console.log "Plurality substantive equality: #{equality simulation.plurality}"
 
@@ -131,13 +140,26 @@ The first parameter value examined is preference distribution.  We start with a 
 
 Next, we look at preference distribution over time.  Preferences on distinct issues can be consistent or independent.  `Consistency` in preferences here means that if an agent has preference `A` on issue `1`, then they will likely have preference `A` for issue `2`.  We repeat our simulation with both a range of `skew` and `consistency` values.
 
+
+Let's try and visualise this idea using 10 agents and 5 trials.
+
+    # D D D D D A B C C C 
+    # D C A A A A A D D A 
+    # B C C C C C C D B A 
+    # B B B B B C A C D D 
+    # C C C C A B A D B C 
+
 > The expectation now is that when preferences are consistently skewed, persistent minorities will be present in all procedures.  None of them will realise substantive equality in these circumstances.
 
 Finally, we add influence to the model.  By influence I mean informal political power (the ability to chance other's preferences) as opposed to formal power (the right to vote).  We run the simulation again with influence values ranging from uniform to highly concentrated.
 
+
+    # A A A C A B D C B D C C D A B A A A D B C C C A D B B C B D A C A D D C A C A C A D A B B D D A D A
+
 > The expectation here is that influence will undermine substantive equality in even the non-skewed voting processes.  I'm really not sure what will happen for sortition.
 
 > Also for debate here is whether we should treat the influence as resulting in enlightened preference or are others misled. The former requires measuring against final preference while the latter against initial preference.
+
 
 Will this be enough to seriously challenge egalitarian justifications of democracy? I have a strong hunch that it will undermine the application of these accounts to our actual democracies that use voting rather than sorting and have concentrated informal power structures.
 
@@ -146,10 +168,3 @@ Will this be enough to seriously challenge egalitarian justifications of democra
 A number of helper functions are necessary for the simulation to work as an independent program.  As these are not germane to the central argument, the have been extracted from the paper's body to here.  
 
 First let's define some simple statistical functions.
-
-
-    sum      = (arr) -> arr.reduce (a,b) -> a + b
-    mean      = (arr) -> sum(arr) / arr.length
-    variance = (arr) ->
-      µ = mean(arr)
-      (arr.reduce ( (a,b) -> a + (µ-b)*(µ-b)), 0) / arr.length-b)), 0) / arr.length
