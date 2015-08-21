@@ -27,14 +27,23 @@ The model consists of agents who hold stipulated preferences `A`, `B`, `C`, `D`,
       constructor: (@preference) ->
 
 
-We create the simulation by instantiating agents and randomly assigning them a preference from a given set of parameters.  Sometimes, we will want to see what happens when preferences are evenly distributed.  Othertimes, we want to know what happens when they are highly skewed.
+We create the simulation by populating it with agents and randomly assigning them a preference from a given set of parameters.  
 
 
     populate = (parameters) ->
-      for n in [1..parameters.agents]
-        index = Math.floor Math.random() * parameters.preferences.length
-        preference = parameters.preferences[index]
+      preferences(parameters).map (preference) ->
         new Agent preference
+
+
+For now, we will generate a uniform random distribution of preferences.  Each preference has an equiprobable chance of being selected, and over 1000 agents, these should be approximately even.
+
+    
+    preferences = (parameters) ->
+      [1..parameters.agents].map (agent) ->
+        unformlyDistribute parameters.preferences
+        
+    unformlyDistribute = (preferences) ->
+      preferences[Math.floor Math.random() * preferences.length]
 
 
 Next, we model some democratic processes that have procedural equality:
@@ -127,16 +136,34 @@ Let's try and visualise this idea using 10 agents and 5 trials.
     # C D C C A B A D B C 
 
 
-    simulation = run {"agents": 1000, "preferences": ["A", "B", "C", "D"], "skew": 0.5, "trials": 1000}
-
-    console.log mean(simulation.sortition)/stdev(simulation.sortition)
-    console.log "Sortition substantive equality: #{equality simulation.sortition}"
-    console.log "Plurality substantive equality: #{equality simulation.plurality}"
-
+    console.log poll(populate {"agents": 1000, "preferences": ["A", "B", "C", "D"]})
 
 > The expectation here is that when preferences are evenly distributed, all three procedures will realise substantive equality.  When preferences are skewed, however, we will (hopefully) see voting but not sortition result in persistent minorities, and thus not realise substantive equality.
 
 > Now we have a criteria for saying when sortition is better than majority voting.
+
+Sometimes, we will want to see what happens when preferences are evenly distributed.  Othertimes, however, we want to know what happens when they are highly skewed.  Depending on the skew parameter that ranges from `0.0` for no skew and `1.0` for higly skewed, we will distribute agent preferences uniformly or exponentially.
+
+We can rewrite the preferences function to generate either uniform or exponential distributions of preferences.  We generate a random number, and if it is less than the `skew` value we use an exponential distribution.
+
+
+    preferences = (parameters) ->
+      [1..parameters.agents].map (agent) ->
+        if Math.random() < parameters.skew
+            exponentiallyDistribute parameters.preferences
+        else
+            unformlyDistribute parameters.preferences
+      
+
+    exponentiallyDistribute = (preferences) ->
+      m = Math.random()
+      index = [0..preferences.length-1].filter (n) ->
+          pos = (2**(preferences.length - n) - 1) / (2**(preferences.length) - 1)
+          m < pos
+        .pop()
+      preferences[index]
+
+    console.log poll(populate {"agents": 1000, "preferences": ["A", "B", "C", "D"], "skew": 0.25})
 
 Next, we look at preference distribution over time.  Preferences on distinct issues can be consistent or independent.  `Consistency` in preferences here means that if an agent has preference `A` on issue `1`, then they will likely have preference `A` for issue `2`.  We repeat our simulation with both a range of `skew` and `consistency` values.
 
@@ -148,6 +175,7 @@ Let's try and visualise this idea using 10 agents and 5 trials.
     # B C C C C C C D B A 
     # B B B B B C A C D D 
     # C C C C A B A D B C 
+
 
 > The expectation now is that when preferences are consistently skewed, persistent minorities will be present in all procedures.  None of them will realise substantive equality in these circumstances.
 
