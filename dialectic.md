@@ -1,5 +1,16 @@
 # Dialectic
 
+
+## Feedback
+
+  - be more explicit about the difference between the moral equality of preference content and the political equality between agents
+
+  - be anally retentive about defining 'substantive', 'equality' etc.
+
+  - consider the incompatibility of substantive equality and autonomy.  It seems like we can only have both when everyone freely chooses the same thing.
+
+## Argument
+
 1) Some justifications of democracy are egalitarian.  According to these accounts, democracy has value because it embodies political equality.  
 
 Singer, for example, claims that we all want to be dictators - we all want to get our own way.  But we call can't get our own way all the time - an equal share of political power is the only distribution of power that we would agree to (if we are rational that is).  Democracy does just this (uniquely), so it is the only system of government that is justifiable.
